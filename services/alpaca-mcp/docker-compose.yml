@@ -1,0 +1,9 @@
+services:
+  alpaca-mcp:
+    build: .
+    image: alpaca-mcp:2.0.0
+    container_name: alpaca-mcp
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - '8000:8000'

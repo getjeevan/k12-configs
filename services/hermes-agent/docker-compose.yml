@@ -1,0 +1,15 @@
+services:
+  hermes-agent:
+    image: hermes-agent:local
+    container_name: hermes-agent
+    restart: unless-stopped
+    init: true
+    ports:
+      - "9119:9119"
+    volumes:
+      - ./hermes-data:/root/.hermes
+      - ./start-hermes.sh:/start-hermes.sh:ro
+    command: ["/start-hermes.sh"]
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8

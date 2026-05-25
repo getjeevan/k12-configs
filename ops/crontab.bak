@@ -1,0 +1,9 @@
+5 20 * * 1-5 docker exec alpaca-bot python3 report.py >> /home/getjeevan/services/alpaca-bot/logs/report.log 2>&1
+0 17 * * 1-5 docker exec alpaca-bot python3 status.py >> /home/getjeevan/services/alpaca-bot/logs/status.log 2>&1
+# IT Ops automation
+0 2 * * * /home/getjeevan/ops/scripts/backup.sh >> /var/log/ops-backup.log 2>&1
+0 7 * * * /home/getjeevan/ops/scripts/health-check.sh >> /var/log/ops-health.log 2>&1
+0 3 * * 0 /home/getjeevan/ops/scripts/cleanup-logs.sh >> /var/log/ops-cleanup.log 2>&1
+* * * * * ~/k12-ssh-healer.sh > /dev/null 2>&1
+# Service rounding — every 5 min, auto-restores, Slack on state change
+*/5 * * * * /home/getjeevan/ops/scripts/rounds.sh >> /var/log/ops-rounds.log 2>&1

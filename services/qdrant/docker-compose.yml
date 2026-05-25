@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  qdrant:
+    container_name: qdrant
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    ports:
+      - 6333:6333
+    volumes:
+      - ~/data/qdrant:/qdrant/storage
+    networks:
+      - qdrant_aiserver
+    healthcheck:
+      test: [CMD-SHELL, "[ -f /qdrant/storage/raft_state.json ] && exit 0 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1536m
+        reservations:
+          cpus: '1.0'
+          memory: 768m
+networks:
+  qdrant_aiserver:
+    external: true

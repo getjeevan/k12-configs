@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  open-webui:
+    container_name: open-webui
+    image: ghcr.io/open-webui/open-webui:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8080"
+    environment:
+      OLLAMA_BASE_URL: http://192.168.1.168:11434
+      WEBUI_AUTH: "True"
+      WEBUI_NAME: K12 AI Dashboard
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:-default-key-change-in-production}
+    volumes:
+      - ~/data/open-webui:/app/backend/data
+    network_mode: bridge
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1536m
+        reservations:
+          cpus: '0.75'
+          memory: 512m

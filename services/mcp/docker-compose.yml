@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  mcp:
+    container_name: mcp
+    image: mcp-server:latest
+    restart: unless-stopped
+    ports:
+      - "3005:3000"
+    environment:
+      OLLAMA_URL: http://192.168.1.168:11434
+      QDRANT_URL: http://192.168.1.168:6333
+      NODE_ENV: production
+    volumes:
+      - ~/data/mcp:/app/data
+    network_mode: bridge
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024m
+        reservations:
+          cpus: '0.5'
+          memory: 512m

@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  n8n:
+    container_name: n8n
+    image: n8nio/n8n:latest
+    restart: on-failure
+    ports:
+      - 3001:3000
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_USER: postgres
+      DB_POSTGRESDB_PASSWORD: postgres
+      DB_POSTGRESDB_DATABASE: n8n
+      N8N_ENCRYPTION_KEY: default-key-change-in-production
+      N8N_SECURE_COOKIE: "false"
+      N8N_HOST: "0.0.0.0"
+      N8N_PORT: "3000"
+      WEBHOOK_URL: http://192.168.1.168:3001/
+      GENERIC_TIMEZONE: UTC
+      TZ: UTC
+    volumes:
+      - ~/data/n8n:/home/node/.n8n
+    networks:
+      - postgres_aiserver
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1536m
+        reservations:
+          cpus: '1.0'
+          memory: 768m
+
+networks:
+  postgres_aiserver:
+    external: true

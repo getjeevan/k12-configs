@@ -1,0 +1,22 @@
+services:
+  devbox:
+    build: .
+    container_name: devbox
+    ports:
+      - "4000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - coder-getjeevan-main-home:/workspaces/main
+      - coder-getjeevan-docker-dev-home:/workspaces/docker-dev
+    environment:
+      - CODER_URL=http://192.168.1.168:7080
+      - CODER_TOKEN=nYAGEktnEk-2bthz6dAQJfn4jK63z4cCx
+      - CODER_OWNER=getjeevan
+      - DEFAULT_WORKSPACE=main
+    restart: unless-stopped
+
+volumes:
+  coder-getjeevan-main-home:
+    external: true
+  coder-getjeevan-docker-dev-home:
+    external: true

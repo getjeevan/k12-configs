@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: langfuse-clickhouse
+    restart: unless-stopped
+    ports:
+      - 8123:8123
+    volumes:
+      - ~/data/clickhouse:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: langfuse-pass
+    networks:
+      - langfuse-net
+  
+  langfuse:
+    container_name: langfuse
+    image: ghcr.io/langfuse/langfuse:latest
+    restart: on-failure
+    ports:
+      - 8888:3000
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/langfuse
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: langfuse-pass
+      CLICKHOUSE_MIGRATION_URL: clickhouse://default:langfuse-pass@clickhouse:9000
+      NEXTAUTH_SECRET: langfuse-secret-key-change-in-prod
+      NEXTAUTH_URL: http://192.168.1.168:8888
+      NODE_ENV: production
+    depends_on:
+      - clickhouse
+    networks:
+      - langfuse-net
+      - postgres_aiserver
+    healthcheck:
+      test: [CMD, curl, -f, http://localhost:3000/health]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1024m
+        reservations:
+          cpus: '0.75'
+          memory: 512m
+
+networks:
+  langfuse-net:
+    driver: bridge
+  postgres_aiserver:
+    external: true
