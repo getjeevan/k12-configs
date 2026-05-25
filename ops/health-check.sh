@@ -9,7 +9,7 @@ STATUS="OK"
 
 alert() { ALERTS="$ALERTS\n• $1"; STATUS="FAIL"; }
 slack() {
-  curl -s -X POST -H 'Content-type: application/json'     --data "{\"text\":\"$1\"}" "$SLACK_WEBHOOK" > /dev/null
+  curl -s -X POST -H 'Content-type: application/json'     --data "{\"text\":\"$1\"}" "$SLACK_ROUNDING" > /dev/null
 }
 
 # ── 1. Disk usage ─────────────────────────────────────────────────────────────

@@ -17,7 +17,7 @@ RECOVERED=()
 
 slack() {
   curl -s -X POST -H 'Content-type: application/json' \
-    --data "{\"text\":\"$1\"}" "$SLACK_WEBHOOK" > /dev/null
+    --data "{\"text\":\"$1\"}" "$SLACK_ROUNDING" > /dev/null
 }
 
 log() { echo "[$TS] $*"; }
