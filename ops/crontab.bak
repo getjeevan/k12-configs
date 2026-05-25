@@ -7,3 +7,4 @@
 * * * * * ~/k12-ssh-healer.sh > /dev/null 2>&1
 # Service rounding — every 5 min, auto-restores, Slack on state change
 */5 * * * * /home/getjeevan/ops/scripts/rounds.sh >> /var/log/ops-rounds.log 2>&1
+50 23 * * * /home/getjeevan/ops/scripts/config-backup.sh >> /var/log/ops-config-backup.log 2>&1
