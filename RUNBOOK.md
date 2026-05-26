@@ -169,4 +169,77 @@ ssh aiserver-ts   # via Tailscale
 
 ---
 
+
+---
+
+## Hostinger VPS (187.124.240.44)
+
+**SSH:** `ssh root@187.124.240.44`  
+**Tailscale:** `100.85.33.109`
+
+### Service Map
+
+| Service | Type | Purpose |
+|---------|------|---------|
+| nginx | systemd | Serves ashleindallas.com + MCP proxy |
+| alpaca-bot | systemd | Trading bot (active Mon–Fri 13:30–20:00 UTC only) |
+| alpaca-mcp | Docker | Alpaca MCP server (port 127.0.0.1:8000) |
+| openclaw | Docker | OpenClaw application |
+| biryani-api | Docker | Biryani Express API (Express.js) |
+| biryani-web | Docker | Biryani Express frontend (nginx:alpine, port 8081) |
+| cisco-config-parser | Docker | Cisco config parsing service |
+| netops-agent | Docker | NetOps automation agent |
+| it-rag-api | Docker | IT RAG API |
+| it-rag-minio | Docker | Object storage for RAG |
+| it-rag-postgres | Docker | RAG database |
+| it-rag-ollama | Docker | Local LLM for RAG |
+
+### Restoration Procedures
+
+#### nginx
+```bash
+ssh root@187.124.240.44
+systemctl restart nginx && systemctl status nginx
+curl -I http://ashleindallas.com
+```
+
+#### alpaca-bot (Hostinger)
+```bash
+systemctl start alpaca-bot
+systemctl status alpaca-bot
+journalctl -u alpaca-bot -n 30
+```
+> ⚠️ **Normal:** shows `failed` outside Mon–Fri 13:30–20:00 UTC — cron manages start/stop
+
+#### Any Docker container
+```bash
+ssh root@187.124.240.44
+docker compose -f /path/to/docker-compose.yml up -d
+docker logs <container> --tail 30
+```
+
+#### Full Hostinger stack restart
+```bash
+ssh root@187.124.240.44
+for c in alpaca-mcp openclaw biryani-api biryani-web cisco-config-parser netops-agent-netops-agent-1 it-rag-api it-rag-minio it-rag-postgres it-rag-ollama; do
+  docker restart $c
+done
+systemctl restart nginx
+```
+
+### Cron Schedule (UTC)
+| Time | Days | Action |
+|------|------|--------|
+| 13:30 | Mon–Fri | `systemctl start alpaca-bot` |
+| 20:00 | Mon–Fri | `systemctl stop alpaca-bot` |
+| 20:05 | Mon–Fri | End-of-day report → Slack |
+
+### Access Points
+- **Site:** http://ashleindallas.com
+- **MCP:** https://mcp.ashleindallas.com/006243dc.../mcp
+- **Biryani:** http://www.biryaniexpress.no (proxied via nginx)
+
+
+---
+
 *Auto-generated. Configs live at: https://github.com/getjeevan/k12-configs*
