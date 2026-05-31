@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  whisper:
+    container_name: whisper
+    image: onerahmet/openai-whisper-asr-webservice:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      ASR_MODEL: base.en
+      ASR_ENGINE: openai_whisper
+    volumes:
+      - ~/data/whisper:/root/.cache/whisper
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048m
+        reservations:
+          cpus: '1.0'
+          memory: 1024m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

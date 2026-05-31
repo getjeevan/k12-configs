@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  kokoro-tts:
+    container_name: kokoro-tts
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.2
+    restart: unless-stopped
+    ports:
+      - "8880:8880"
+    volumes:
+      - ~/data/kokoro:/app/kokoro-v0_19
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048m
+        reservations:
+          cpus: '1.0'
+          memory: 1024m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8880/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s

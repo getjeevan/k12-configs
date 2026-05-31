@@ -111,6 +111,26 @@ docker exec -it kali /bin/bash
 
 ---
 
+### 🎙 Whisper (STT)
+```bash
+cd ~/services/whisper && docker compose up -d
+curl http://localhost:9000/docs
+```
+**Open WebUI STT base URL:** `http://192.168.1.168:9000/v1`
+**Note:** First start downloads the `base.en` model (~140MB) — allow 60s.
+
+---
+
+### 🔊 Kokoro TTS
+```bash
+cd ~/services/kokoro-tts && docker compose up -d
+curl http://localhost:8880/health
+```
+**Open WebUI TTS base URL:** `http://192.168.1.168:8880/v1`
+**Voices:** `af_sky` (neutral), `af_bella` (warm), `bm_daniel` (British male)
+
+---
+
 ### 🔥 fail2ban / UFW
 ```bash
 sudo systemctl restart fail2ban
@@ -141,7 +161,7 @@ cd ~/services/open-webui && docker compose restart
 
 ## Total Stack Restart (last resort)
 ```bash
-for svc in postgres redis n8n qdrant open-webui hermes-agent infra-dashboard alpaca-bot; do
+for svc in postgres redis n8n qdrant open-webui hermes-agent infra-dashboard alpaca-bot whisper kokoro-tts; do
   dir=~/services/$svc
   [ -d "$dir" ] && cd "$dir" && docker compose up -d
 done
@@ -155,11 +175,13 @@ sudo systemctl restart ollama
 | Service | Local | Tailscale |
 |---------|-------|-----------|
 | infra-dashboard | http://192.168.1.168:7000 | http://100.112.118.83:7000 |
-| open-webui | http://192.168.1.168:8000 | http://100.112.118.83:8000 |
+| open-webui (Jarvis UI) | http://192.168.1.168:8000 | http://100.112.118.83:8000 |
 | n8n | http://192.168.1.168:3001 | http://100.112.118.83:3001 |
 | Ollama API | http://192.168.1.168:11434 | http://100.112.118.83:11434 |
 | alpaca-dashboard | http://192.168.1.168:8080 | — |
 | Qdrant | http://192.168.1.168:6333 | — |
+| Whisper STT | http://192.168.1.168:9000 | — |
+| Kokoro TTS | http://192.168.1.168:8880 | — |
 
 **SSH:**
 ```bash
