@@ -137,24 +137,33 @@ fi
 
 # ── Hostinger VPS ─────────────────────────────────────────────────────────────
 hdr "Hostinger VPS (187.124.240.44)"
-HDATA=$(ssh -i ~/.ssh/id_ed25519_hostinger_rag -o StrictHostKeyChecking=no -o ConnectTimeout=6 root@187.124.240.44 "
-  echo DISK=$(df / | awk 'NR==2{print \$5}')
-  echo DISK_FREE=$(df -h / | awk 'NR==2{print \$4}')
-  echo MEM_FREE=$(free -h | awk '/^Mem/{print \$7}')
-  echo MEM_PCT=$(free | awk '/^Mem/{printf \"%.0f\", \$7/\$2*100}')
-  echo LOAD=$(cat /proc/loadavg | awk '{print \$1}')
-  echo UPTIME=$(uptime -p | sed 's/up //')
+HDATA=$(ssh -i ~/.ssh/id_ed25519_hostinger_rag -o StrictHostKeyChecking=no -o ConnectTimeout=6 root@187.124.240.44 'bash -s' <<'REMOTE'
+  DISK=$(df / | awk 'NR==2{print $5}')
+  DISK_FREE=$(df -h / | awk 'NR==2{print $4}')
+  MEM_FREE=$(free -h | awk '/^Mem/{print $7}')
+  MEM_PCT=$(free | awk '/^Mem/{printf "%.0f", $7/$2*100}')
+  LOAD=$(awk '{print $1}' /proc/loadavg)
+  UPTIME_RAW=$(uptime -p | sed 's/up //')
+  printf 'DISK=%s\n'      "$DISK"
+  printf 'DISK_FREE=%s\n' "$DISK_FREE"
+  printf 'MEM_FREE=%s\n'  "$MEM_FREE"
+  printf 'MEM_PCT=%s\n'   "$MEM_PCT"
+  printf 'LOAD=%s\n'      "$LOAD"
+  printf "UPTIME='%s'\n"  "$UPTIME_RAW"
   for c in nginx alpaca-bot; do
-    state=\$(systemctl is-active \$c 2>/dev/null)
-    echo \"SYS_\$c=\$state\"
+    state=$(systemctl is-active "$c" 2>/dev/null)
+    name_safe="${c//-/_}"
+    printf 'SYS_%s=%s\n' "$name_safe" "$state"
   done
   for c in alpaca-mcp openclaw biryani-api biryani-web cisco-config-parser netops-agent-netops-agent-1 it-rag-api it-rag-postgres it-rag-ollama; do
-    state=\$(docker inspect --format '{{.State.Status}}' \$c 2>/dev/null)
-    health=\$(docker inspect --format '{{.State.Health.Status}}' \$c 2>/dev/null)
-    [ \"\$health\" = 'unhealthy' ] && state='unhealthy'
-    name_safe="${c//-/_}"; echo \"DCK_${name_safe}=${state}\"
+    state=$(docker inspect --format '{{.State.Status}}' "$c" 2>/dev/null)
+    health=$(docker inspect --format '{{.State.Health.Status}}' "$c" 2>/dev/null)
+    [ "$health" = 'unhealthy' ] && state='unhealthy'
+    name_safe="${c//-/_}"
+    printf 'DCK_%s=%s\n' "$name_safe" "$state"
   done
-" 2>/dev/null)
+REMOTE
+)
 
 if [ -z "$HDATA" ]; then
   fail "Hostinger VPS" "unreachable"
@@ -171,13 +180,13 @@ else
   [ "$SYS_alpaca_bot" = "active" ] && ok "alpaca-bot" "(systemd)" || fail "alpaca-bot (trading)" "$SYS_alpaca_bot"
 
   # Docker containers
-  for entry in $HDATA; do
+  while IFS= read -r entry; do
     key="${entry%%=*}"; val="${entry##*=}"
     [[ "$key" != DCK_* ]] && continue
     name="${key#DCK_}"
-    label="${name//-/ }" ; label="${label//_/-}"
-    [ "$val" = "running" ] && ok "$name" || fail "$name" "$val"
-  done
+    label="${name//_/-}"
+    [ "$val" = "running" ] && ok "$label" || fail "$label" "$val"
+  done <<< "$HDATA"
 fi
 
 # ── Footer ────────────────────────────────────────────────────────────────────
