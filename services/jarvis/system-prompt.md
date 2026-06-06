@@ -51,3 +51,36 @@ After the Jarvis model is created, wire in the voice services:
    - Voice: `af_sky` (neutral) or `af_bella` (warmer) — see Kokoro docs for full list
 
 4. In any chat, click the **microphone icon** to speak to Jarvis.
+
+---
+
+## n8n Morning Briefing Workflow
+
+### One-time setup
+
+1. Add your Slack webhook URL to `services/n8n/.env` (create if missing):
+   ```
+   SLACK_JARVIS_WEBHOOK=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   ```
+   Then restart n8n: `cd ~/services/n8n && docker compose up -d`
+
+2. In n8n (http://192.168.1.168:3001):
+   - Go to **Workflows → Import from file**
+   - Select `services/jarvis/n8n-morning-briefing.json`
+   - Open the imported workflow and click **Activate** (toggle top-right)
+
+3. To test immediately without waiting for 07:00:
+   - Open the workflow → click **Execute Workflow**
+   - Check Slack `#smart-rounding` for the briefing
+
+### What it does
+
+Every day at 07:00 UTC Jarvis:
+1. Pings all 10 K12 services in parallel
+2. Sends the health snapshot to Ollama (devstral) for a natural-language summary
+3. Posts a formatted briefing to Slack with a service status block
+
+### Customise the schedule
+
+Open the `Daily 07:00` node → change **Hour** to your preferred local time.
+Note: n8n runs in UTC — adjust accordingly (`07:00 UTC = 02:00 CDT`).

@@ -20,6 +20,8 @@ services:
       WEBHOOK_URL: http://192.168.1.168:3001/
       GENERIC_TIMEZONE: UTC
       TZ: UTC
+      # Jarvis — paste your Slack Incoming Webhook URL here
+      SLACK_JARVIS_WEBHOOK: ${SLACK_JARVIS_WEBHOOK:-}
     volumes:
       - ~/data/n8n:/home/node/.n8n
     networks:

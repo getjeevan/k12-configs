@@ -1,0 +1,108 @@
+{
+  "name": "Jarvis Morning Briefing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hour": 7
+            }
+          ]
+        }
+      },
+      "id": "f1a2b3c4-1111-1111-1111-000000000001",
+      "name": "Daily 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check all K12 services and return a health summary\nconst services = [\n  { name: 'Ollama',       url: 'http://192.168.1.168:11434/api/tags' },\n  { name: 'Open WebUI',  url: 'http://192.168.1.168:8000' },\n  { name: 'n8n',         url: 'http://192.168.1.168:3001/healthz' },\n  { name: 'Qdrant',      url: 'http://192.168.1.168:6333/health' },\n  { name: 'MCP Server',  url: 'http://192.168.1.168:3005/health' },\n  { name: 'Langfuse',    url: 'http://192.168.1.168:8888/api/public/health' },\n  { name: 'Hermes',      url: 'http://192.168.1.168:9119/' },\n  { name: 'Whisper STT', url: 'http://192.168.1.168:9000/docs' },\n  { name: 'Kokoro TTS',  url: 'http://192.168.1.168:8880/health' },\n  { name: 'Infra Dash',  url: 'http://192.168.1.168:7000' },\n];\n\nconst results = [];\nconst failed = [];\n\nfor (const svc of services) {\n  try {\n    await this.helpers.httpRequest({ method: 'GET', url: svc.url, timeout: 5000 });\n    results.push(`✅ ${svc.name}`);\n  } catch (e) {\n    results.push(`❌ ${svc.name}`);\n    failed.push(svc.name);\n  }\n}\n\nconst statusLine = failed.length === 0\n  ? 'All systems operational.'\n  : `${failed.length} service(s) down: ${failed.join(', ')}`;\n\nreturn [{\n  json: {\n    healthReport: results.join('\\n'),\n    statusLine,\n    failedCount: failed.length,\n    date: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })\n  }\n}];"
+      },
+      "id": "f1a2b3c4-2222-2222-2222-000000000002",
+      "name": "Health Check All Services",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.1.168:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"devstral:latest\",\n  \"prompt\": \"You are Jarvis, the K12 homelab assistant. Today is {{ $json.date }}.\\n\\nInfrastructure status:\\n{{ $json.healthReport }}\\n\\nWrite a concise morning briefing (3-5 sentences). Lead with any failures. If all systems are up, confirm and name one thing to keep an eye on today. Be direct.\",\n  \"stream\": false\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "f1a2b3c4-3333-3333-3333-000000000003",
+      "name": "Ollama — Generate Briefing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_JARVIS_WEBHOOK }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"*Jarvis Morning Briefing — {{ $('Health Check All Services').item.json.date }}*\",\n  \"blocks\": [\n    {\n      \"type\": \"header\",\n      \"text\": { \"type\": \"plain_text\", \"text\": \"Jarvis Morning Briefing\" }\n    },\n    {\n      \"type\": \"section\",\n      \"text\": { \"type\": \"mrkdwn\", \"text\": {{ JSON.stringify($json.response) }} }\n    },\n    {\n      \"type\": \"divider\"\n    },\n    {\n      \"type\": \"section\",\n      \"text\": { \"type\": \"mrkdwn\", \"text\": \"*Service Status*\\n{{ $('Health Check All Services').item.json.healthReport }}\" }\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "f1a2b3c4-4444-4444-4444-000000000004",
+      "name": "Slack — Post Briefing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Daily 07:00": {
+      "main": [
+        [
+          {
+            "node": "Health Check All Services",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Check All Services": {
+      "main": [
+        [
+          {
+            "node": "Ollama — Generate Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama — Generate Briefing": {
+      "main": [
+        [
+          {
+            "node": "Slack — Post Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    { "name": "jarvis" }
+  ]
+}

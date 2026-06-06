@@ -68,6 +68,20 @@ docker logs hermes-agent --tail 20
 
 ---
 
+### 🤖 Jarvis (n8n morning briefing)
+If the briefing stops posting to Slack:
+```bash
+# Check n8n is running
+cd ~/services/n8n && docker compose up -d
+docker logs n8n --tail 20
+# Verify SLACK_JARVIS_WEBHOOK is set
+docker exec n8n env | grep SLACK
+```
+Workflow file: `~/services/jarvis/n8n-morning-briefing.json`  
+Re-import via n8n UI → Workflows → Import from file, then re-activate.
+
+---
+
 ### ⚙️ n8n
 ```bash
 cd ~/services/n8n && docker compose up -d
