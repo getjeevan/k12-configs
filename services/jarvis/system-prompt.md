@@ -80,6 +80,31 @@ Every day at 07:00 UTC Jarvis:
 2. Sends the health snapshot to Ollama (devstral) for a natural-language summary
 3. Posts a formatted briefing to Slack with a service status block
 
+---
+
+## Jarvis Ops API + Open WebUI Tool
+
+The Ops API (port 3006) gives Jarvis live infrastructure awareness.
+Once wired in, you can ask: *"Is everything healthy?"* and get a real answer.
+
+### Deploy the Ops API
+
+```bash
+cd ~/services/jarvis-ops-api
+docker compose build
+docker compose up -d
+curl http://localhost:3006/status/text   # verify
+```
+
+### Register the Open WebUI tool
+
+1. Open WebUI → **Admin Panel → Tools → + New Tool**
+2. Paste the contents of `services/jarvis/open-webui-tool.py`
+3. Save → toggle the tool **On** in the Jarvis model settings
+4. Ask Jarvis: *"What's the status of K12?"* — it will call the API live
+
+---
+
 ### Customise the schedule
 
 Open the `Daily 07:00` node → change **Hour** to your preferred local time.

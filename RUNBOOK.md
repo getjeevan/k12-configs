@@ -125,6 +125,17 @@ docker exec -it kali /bin/bash
 
 ---
 
+### 🔌 Jarvis Ops API
+```bash
+cd ~/services/jarvis-ops-api && docker compose up -d
+curl http://localhost:3006/health
+curl http://localhost:3006/status/text
+```
+**Endpoints:** `/health` · `/status` (JSON) · `/status/text` (plain)
+**Note:** Mounts Docker socket read-only — can inspect all containers without host access.
+
+---
+
 ### 🎙 Whisper (STT)
 ```bash
 cd ~/services/whisper && docker compose up -d
@@ -175,7 +186,7 @@ cd ~/services/open-webui && docker compose restart
 
 ## Total Stack Restart (last resort)
 ```bash
-for svc in postgres redis n8n qdrant open-webui hermes-agent infra-dashboard alpaca-bot whisper kokoro-tts; do
+for svc in postgres redis n8n qdrant open-webui hermes-agent infra-dashboard alpaca-bot whisper kokoro-tts jarvis-ops-api; do
   dir=~/services/$svc
   [ -d "$dir" ] && cd "$dir" && docker compose up -d
 done
@@ -196,6 +207,7 @@ sudo systemctl restart ollama
 | Qdrant | http://192.168.1.168:6333 | — |
 | Whisper STT | http://192.168.1.168:9000 | — |
 | Kokoro TTS | http://192.168.1.168:8880 | — |
+| Jarvis Ops API | http://192.168.1.168:3006 | — |
 
 **SSH:**
 ```bash

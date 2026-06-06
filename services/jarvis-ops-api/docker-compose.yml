@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  jarvis-ops-api:
+    container_name: jarvis-ops-api
+    build: .
+    image: jarvis-ops-api:local
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    volumes:
+      # Docker socket so the API can inspect containers without host access
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3006/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256m
+        reservations:
+          cpus: '0.1'
+          memory: 64m
