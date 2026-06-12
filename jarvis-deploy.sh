@@ -44,7 +44,7 @@ ok "Repo up to date"
 
 # ── 2. Sync new service directories to ~/services ─────────────────────────────
 hdr "Syncing service configs"
-NEW_SERVICES=(jarvis-ops-api whisper kokoro-tts)
+NEW_SERVICES=(jarvis-ops-api whisper kokoro-tts jarvis-rag)
 
 for svc in "${NEW_SERVICES[@]}"; do
   src="$SERVICES_SRC/$svc"
@@ -58,11 +58,23 @@ for svc in "${NEW_SERVICES[@]}"; do
   ok "Synced $svc → $dst"
 done
 
-# ── 3. Build jarvis-ops-api ───────────────────────────────────────────────────
-hdr "Building jarvis-ops-api"
-cd "$SERVICES_DST/jarvis-ops-api"
-docker compose build
-ok "Build complete"
+# ── 3. Build local images ─────────────────────────────────────────────────────
+for svc in jarvis-ops-api jarvis-rag; do
+  hdr "Building $svc"
+  cd "$SERVICES_DST/$svc"
+  docker compose build
+  ok "$svc build complete"
+done
+
+# ── 3b. Ensure embedding model is available ───────────────────────────────────
+hdr "Embedding model"
+if curl -s http://localhost:11434/api/tags | grep -q nomic-embed-text; then
+  ok "nomic-embed-text already pulled"
+else
+  info "Pulling nomic-embed-text via Ollama (one-time, ~275MB)"
+  curl -s http://localhost:11434/api/pull -d '{"model":"nomic-embed-text"}' > /dev/null
+  ok "nomic-embed-text pulled"
+fi
 
 # ── 4. Start all new services ─────────────────────────────────────────────────
 hdr "Starting services"
@@ -86,6 +98,7 @@ check_url() {
 check_url "Jarvis Ops API" "http://localhost:3006/health"
 check_url "Whisper STT"    "http://localhost:9000/docs"
 check_url "Kokoro TTS"     "http://localhost:8880/health"
+check_url "Jarvis RAG"     "http://localhost:3007/health"
 
 # ── 6. Live status from Ops API ───────────────────────────────────────────────
 hdr "K12 live status"

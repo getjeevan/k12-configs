@@ -1,0 +1,29 @@
+services:
+  jarvis-rag:
+    container_name: jarvis-rag
+    build: .
+    image: jarvis-rag:local
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    environment:
+      OLLAMA_URL: http://192.168.1.168:11434
+      QDRANT_URL: http://192.168.1.168:6333
+      EMBED_MODEL: nomic-embed-text
+    volumes:
+      - ~/data/jarvis-knowledge:/knowledge
+      - ~/data/jarvis-rag-state:/state
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3007/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512m
+        reservations:
+          cpus: '0.25'
+          memory: 128m

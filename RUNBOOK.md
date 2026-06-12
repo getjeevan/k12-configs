@@ -136,6 +136,17 @@ curl http://localhost:3006/status/text
 
 ---
 
+### 🧠 Jarvis RAG (memory ingest)
+```bash
+cd ~/services/jarvis-rag && docker compose up -d
+curl http://localhost:3007/health   # shows files_ingested / chunks_upserted
+```
+**Knowledge dir:** `~/data/jarvis-knowledge/` (drop .md/.txt files, ingested within 60s)
+**Qdrant collection:** `jarvis_memory` · **Embed model:** nomic-embed-text (Ollama)
+**Force re-ingest:** `rm ~/data/jarvis-rag-state/ingested.json && docker restart jarvis-rag`
+
+---
+
 ### 🎙 Whisper (STT)
 ```bash
 cd ~/services/whisper && docker compose up -d
@@ -186,7 +197,7 @@ cd ~/services/open-webui && docker compose restart
 
 ## Total Stack Restart (last resort)
 ```bash
-for svc in postgres redis n8n qdrant open-webui hermes-agent infra-dashboard alpaca-bot whisper kokoro-tts jarvis-ops-api; do
+for svc in postgres redis n8n qdrant open-webui hermes-agent infra-dashboard alpaca-bot whisper kokoro-tts jarvis-ops-api jarvis-rag; do
   dir=~/services/$svc
   [ -d "$dir" ] && cd "$dir" && docker compose up -d
 done
@@ -208,6 +219,7 @@ sudo systemctl restart ollama
 | Whisper STT | http://192.168.1.168:9000 | — |
 | Kokoro TTS | http://192.168.1.168:8880 | — |
 | Jarvis Ops API | http://192.168.1.168:3006 | — |
+| Jarvis RAG | http://192.168.1.168:3007 | — |
 
 **SSH:**
 ```bash

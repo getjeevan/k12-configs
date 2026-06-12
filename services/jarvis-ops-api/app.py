@@ -12,6 +12,7 @@ CONTAINERS_REQUIRED = [
     "postgres", "redis", "open-webui", "n8n", "qdrant",
     "hermes-agent", "infra-dashboard", "alpaca-bot",
     "alpaca-dashboard", "kali", "whisper", "kokoro-tts",
+    "jarvis-rag",
 ]
 
 # Optional containers — reported but don't affect overall health
@@ -28,6 +29,7 @@ ENDPOINTS = [
     ("Qdrant",       "http://192.168.1.168:6333/healthz"),   # /health → 404; correct path is /healthz
     ("Whisper STT",  "http://192.168.1.168:9000/docs"),
     ("Kokoro TTS",   "http://192.168.1.168:8880/health"),
+    ("Jarvis RAG",   "http://192.168.1.168:3007/health"),
     ("Infra Dash",   "http://192.168.1.168:7000"),
 ]
 

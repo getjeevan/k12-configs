@@ -82,6 +82,40 @@ Every day at 07:00 UTC Jarvis:
 
 ---
 
+## Jarvis Memory (RAG pipeline)
+
+Jarvis remembers anything you drop into `~/data/jarvis-knowledge/` on K12.
+
+### How it works
+
+1. `jarvis-rag` (port 3007) polls `~/data/jarvis-knowledge/` every 60s
+2. New or changed `.md`/`.txt` files are chunked, embedded with
+   `nomic-embed-text` via Ollama, and upserted into the Qdrant collection
+   `jarvis_memory` (edits replace stale chunks automatically)
+3. The **K12 Jarvis Memory** tool in Open WebUI searches that collection
+
+### Setup
+
+```bash
+# Deployed automatically by jarvis-deploy.sh. To verify:
+curl http://localhost:3007/health
+
+# Add your first memory
+mkdir -p ~/data/jarvis-knowledge
+echo "# K12 Notes\nThe alpaca bot uses paper trading only." > ~/data/jarvis-knowledge/notes.md
+# Wait ~60s, then check files_ingested incremented:
+curl http://localhost:3007/health
+```
+
+### Register the memory tool
+
+1. Open WebUI → **Workspace → Tools → + New Tool**
+2. Paste the contents of `services/jarvis/open-webui-memory-tool.py`
+3. Save → enable it on the Jarvis model
+4. Ask Jarvis: *"What do you remember about the alpaca bot?"*
+
+---
+
 ## Jarvis Ops API + Open WebUI Tool
 
 The Ops API (port 3006) gives Jarvis live infrastructure awareness.
