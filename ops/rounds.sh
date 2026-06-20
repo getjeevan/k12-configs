@@ -155,7 +155,6 @@ check_docker redis           ~/services/redis          auto
 
 # AI & LLM
 check_systemd ollama         auto
-check_docker  open-webui     ~/services/open-webui     auto
 check_docker  hermes-agent   ~/services/hermes-agent   auto
 
 # Workflow
@@ -177,11 +176,16 @@ check_systemd ufw            auto
 
 # Endpoint smoke tests
 check_url ollama-api   "http://localhost:11434/api/tags"    2
-check_url open-webui   "http://localhost:8000"              2
 check_url hermes       "http://localhost:9119/health"       4   # 401 = auth required = alive
 check_url n8n          "http://localhost:3001"              2
 check_url infra-dash   "http://localhost:7000"              2
 check_url qdrant       "http://localhost:6333/collections"  2
+
+# Hostinger public endpoints
+check_url h-biryani      "https://biryaniexpress.no"              2
+check_url h-ai2india     "https://ai2india.com"                   2
+check_url h-cisco-parser "http://187.124.240.44:8088"             2
+check_url h-netops       "http://187.124.240.44:5000"             2
 
 log "═══ Rounds complete ═══"
 
